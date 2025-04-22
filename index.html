@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Michi Note</title>
+    <style>
+        :root {
+            --primary: #081abf;
+            --secondary: #6366f1;
+            --accent: #818cf8;
+            --background: #f8fafc;
+            --text: #1e293b;
+            --card: #ffffff;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --error: #ef4444;
+            --success: #22c55e;
+        }
+
+        .dark-theme {
+            --primary: #3440a8;
+            --secondary: #818cf8;
+            --accent: #a5b4fc;
+            --background: #0f172a;
+            --text: #f1f5f9;
+            --card: #1e293b;
+            --card-shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        header {
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-pic {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            background-color: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary);
+            overflow: hidden;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .welcome-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .username {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background-color: var(--card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 200px;
+            transform: translateY(0);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px var(--card-shadow);
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .option-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .option-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .notes-container, .settings-container {
+            background-color: var(--card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            margin-bottom: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .note-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: var(--background);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-content {
+            flex: 1;
+        }
+
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .note-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .note-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        .section-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-add {
+            margin-top: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #ccc;
+            background-color: var(--background);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card);
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-close {
+            background-color: transparent;
+            color: var(--text);
+            border: 1px solid #ccc;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .password-prompt {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            opacity: 0.7;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            header {
+                padding: 1rem 0;
+                margin-bottom: 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .profile-pic {
+                width: 40px;
+                height: 40px;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .option-card {
+                min-height: 150px;
+            }
+
+            .option-icon {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">📝</span>
+                <span>Michi Note</span>
+            </div>
+            <div class="profile-container">
+                <div class="welcome-text">Ciao, <span class="username">Utente</span></div>
+                <div class="profile-pic" id="profilePic">👤</div>
+            </div>
+        </header>
+
+        <main>
+            <div class="home-screen">
+                <div class="options-grid">
+                    <div class="option-card" onclick="showNotes('quick')">
+                        <div class="option-icon">⚡</div>
+                        <div class="option-title">Note Veloci</div>
+                        <div class="option-description">Appunti rapidi per ogni occasione</div>
+                    </div>
+                    <div class="option-card" onclick="showNotes('important')">
+                        <div class="option-icon">⭐</div>
+                        <div class="option-title">Note Importanti</div>
+                        <div class="option-description">Per le cose che non puoi dimenticare</div>
+                    </div>
+                    <div class="option-card" onclick="showSecureNotes()">
+                        <div class="option-icon">🔒</div>
+                        <div class="option-title">Note Sicure</div>
+                        <div class="option-description">Protette da password</div>
+                    </div>
+                    <div class="option-card" onclick="showSettings()">
+                        <div class="option-icon">⚙️</div>
+                        <div class="option-title">Impostazioni</div>
+                        <div class="option-description">Personalizza la tua esperienza</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notes-container" id="quickNotes">
+                <button class="back-btn" onclick="showHome()">
+                    <span>←</span> Indietro
+                </button>
+                <h2 class="section-title">
+                    <span>⚡</span> Note Veloci
+                </h2>
+                <div class="notes-list" id="quickNotesList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <p>Non hai ancora note veloci. Crea la tua prima nota!</p>
+                    </div>
+                </div>
+                <button class="btn btn-add" onclick="openNoteModal('quick')">
+                    <span>+</span> Aggiungi Nota
+                </button>
+            </div>
+
+            <div class="notes-container" id="importantNotes">
+                <button class="back-btn" onclick="showHome()">
+                    <span>←</span> Indietro
+                </button>
+                <h2 class="section-title">
+                    <span>⭐</span> Note Importanti
+                </h2>
+                <div class="notes-list" id="importantNotesList">
+                    <div class="empty-state">
+                        <div class="empty-icon">⭐</div>
+                        <p>Non hai ancora note importanti. Crea la tua prima nota!</p>
+                    </div>
+                </div>
+                <button class="btn btn-add" onclick="openNoteModal('important')">
+                    <span>+</span> Aggiungi Nota
+                </button>
+            </div>
+
+            <div class="notes-container" id="secureNotes">
+                <button class="back-btn" onclick="showHome()">
+                    <span>←</span> Indietro
+                </button>
+                <h2 class="section-title">
+                    <span>🔒</span> Note Sicure
+                </h2>
+                <div id="secureNotesContent">
+                    <div class="password-prompt" id="passwordPrompt">
+                        <div class="form-group">
+                            <label class="form-label">Inserisci la password:</label>
+                            <input type="password" class="form-input" id="passwordInput">
+                        </div>
+                        <button class="btn" onclick="checkPassword()">Accedi</button>
+                    </div>
+                    <div class="notes-list" id="secureNotesList" style="display:none;">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔒</div>
+                            <p>Non hai ancora note sicure. Crea la tua prima nota protetta!</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-add" id="addSecureNoteBtn" style="display:none;" onclick="openNoteModal('secure')">
+                        <span>+</span> Aggiungi Nota Sicura
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-container" id="settings">
+                <button class="back-btn" onclick="showHome()">
+                    <span>🔙</span> Indietro
+                </button>
+                <h2 class="section-title">
+                    <span>⚙️</span> Impostazioni
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">Il tuo nome</label>
+                    <input type="text" class="form-input" id="userNameInput" placeholder="Inserisci il tuo nome">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Immagine Profilo</label>
+                    <input type="file" id="profileImageInput" accept="image/*">
+                </div>
+                <div class="switch-container">
+                    <label class="form-label">Tema Scuro</label>
+                    <label class="switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-container">
+                    <label class="form-label">Animazioni</label>
+                    <label class="switch">
+                        <input type="checkbox" id="animationsToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                <button class="btn" onclick="saveSettings()">Salva Impostazioni</button>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Aggiungi Nota</h2>
+            <div class="form-group">
+                <label class="form-label">Titolo</label>
+                <input type="text" class="form-input" id="noteTitleInput" placeholder="Titolo della nota">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contenuto</label>
+                <textarea class="form-textarea" id="noteContentInput" placeholder="Scrivi qui la tua nota..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn modal-close" onclick="closeNoteModal()">Annulla</button>
+                <button class="btn" onclick="saveNote()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stato dell'app
+        let currentSection = 'home';
+        let currentNoteType = null;
+        let editingNoteId = null;
+        let securePassword = ''; // Password per note sicure
+        let isAuthenticated = false;
+
+        // Storage per le note
+        const notes = {
+            quick: [],
+            important: [],
+            secure: []
+        };
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            setupEventListeners();
+            checkDarkModePreference();
+            document.getElementById('passwordPrompt').style.display = 'block';
+        });
+
+        function setupEventListeners() {
+            // Toggle tema scuro
+            document.getElementById('darkModeToggle').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            });
+
+            // Input immagine profilo
+            document.getElementById('profileImageInput').addEventListener('change', handleProfileImageChange);
+        }
+
+        function handleProfileImageChange(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const profilePic = document.getElementById('profilePic');
+                    profilePic.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    profilePic.appendChild(img);
+                    localStorage.setItem('profileImage', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function checkDarkModePreference() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            document.getElementById('darkModeToggle').checked = darkMode;
+            if (darkMode) {
+                document.body.classList.add('dark-theme');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            // Carica note
+            const savedNotes = localStorage.getItem('michiNotes');
+            if (savedNotes) {
+                Object.assign(notes, JSON.parse(savedNotes));
+                refreshNotesList('quick');
+                refreshNotesList('important');
+                refreshNotesList('secure');
+            }
+
+            // Carica password
+            securePassword = localStorage.getItem('securePassword') || '';
+
+            // Carica nome utente
+            const userName = localStorage.getItem('userName') || 'Utente';
+            document.querySelector('.username').textContent = userName;
+            document.getElementById('userNameInput').value = userName;
+
+            // Carica immagine profilo
+            const profileImage = localStorage.getItem('profileImage');
+            if (profileImage) {
+                const profilePic = document.getElementById('profilePic');
+                profilePic.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = profileImage;
+                profilePic.appendChild(img);
+            }
+
+            // Carica preferenze
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            document.getElementById('darkModeToggle').checked = darkMode;
+
+            const animations = localStorage.getItem('animations') !== 'false';
+            document.getElementById('animationsToggle').checked = animations;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('michiNotes', JSON.stringify(notes));
+            localStorage.setItem('securePassword', securePassword);
+        }
+
+        function showHome() {
+            hideAllSections();
+            document.querySelector('.home-screen').style.display = 'block';
+            currentSection = 'home';
+        }
+
+        function hideAllSections() {
+            document.querySelector('.home-screen').style.display = 'none';
+            document.getElementById('quickNotes').style.display = 'none';
+            document.getElementById('importantNotes').style.display = 'none';
+            document.getElementById('secureNotes').style.display = 'none';
+            document.getElementById('settings').style.display = 'none';
+        }
+
+        function showNotes(type) {
+            hideAllSections();
+            document.getElementById(`${type}Notes`).style.display = 'block';
+            refreshNotesList(type);
+            currentSection = type;
+        }
+
+        function showSecureNotes() {
+            hideAllSections();
+            document.getElementById('secureNotes').style.display = 'block';
+
+            if (securePassword === '') {
+                // Prima volta, chiedi di impostare una password
+                alert('Devi impostare una password per accedere alle note sicure. Vai nelle impostazioni per configurarla.');
+                showSettings();
+                return;
+            }
+
+            if (!isAuthenticated) {
+                document.getElementById('passwordPrompt').style.display = 'block';
+                document.getElementById('secureNotesList').style.display = 'none';
+                document.getElementById('addSecureNoteBtn').style.display = 'none';
+            } else {
+                document.getElementById('passwordPrompt').style.display = 'none';
+                document.getElementById('secureNotesList').style.display = 'block';
+                document.getElementById('addSecureNoteBtn').style.display = 'block';
+                refreshNotesList('secure');
+            }
+
+            currentSection = 'secure';
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === securePassword) {
+                isAuthenticated = true;
+                document.getElementById('passwordPrompt').style.display = 'none';
+                document.getElementById('secureNotesList').style.display = 'block';
+                document.getElementById('addSecureNoteBtn').style.display = 'block';
+                refreshNotesList('secure');
+                document.getElementById('passwordInput').value = '';
+            } else {
+                alert('Password errata!');
+            }
+        }
+
+        function showSettings() {
+            hideAllSections();
+            document.getElementById('settings').style.display = 'block';
+            currentSection = 'settings';
+        }
+
+        function saveSettings() {
+            const userName = document.getElementById('userNameInput').value;
+            document.querySelector('.username').textContent = userName;
+            localStorage.setItem('userName', userName);
+
+            const darkMode = document.getElementById('darkModeToggle').checked;
+            localStorage.setItem('darkMode', darkMode);
+
+            const animations = document.getElementById('animationsToggle').checked;
+            localStorage.setItem('animations', animations);
+
+            const newPassword = document.getElementById('changePasswordInput').value;
+            if (newPassword) {
+                securePassword = newPassword;
+                localStorage.setItem('securePassword', newPassword);
+                document.getElementById('changePasswordInput').value = '';
+                alert('Password aggiornata con successo!');
+            }
+
+            alert('Impostazioni salvate!');
+            showHome();
+        }
+
+        function refreshNotesList(type) {
+            const notesList = document.getElementById(`${type}NotesList`);
+
+            if (notes[type].length === 0) {
+                notesList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">${type === 'quick' ? '📝' : type === 'important' ? '⭐' : '🔒'}</div>
+                        <p>Non hai ancora note ${type === 'quick' ? 'veloci' : type === 'important' ? 'importanti' : 'sicure'}. Crea la tua prima nota!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            notesList.innerHTML = '';
+            notes[type].forEach((note, index) => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'note-item';
+                noteElement.innerHTML = `
+                    <div class="note-content">
+                        <div class="note-title">${note.title}</div>
+                        <div class="note-text">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</div>
+                    </div>
+                    <div class="note-actions">
+                        <button class="note-btn" onclick="editNote('${type}', ${index})">✏️</button>
+                        <button class="note-btn" onclick="deleteNote('${type}', ${index})">🗑️</button>
+                    </div>
+                `;
+                notesList.appendChild(noteElement);
+            });
+        }
+
+        function openNoteModal(type, index = null) {
+            currentNoteType = type;
+            editingNoteId = index;
+
+            document.getElementById('modalTitle').textContent = index !== null ? 'Modifica Nota' : 'Aggiungi Nota';
+
+            if (index !== null) {
+                const note = notes[type][index];
+                document.getElementById('noteTitleInput').value = note.title;
+                document.getElementById('noteContentInput').value = note.content;
+            } else {
+                document.getElementById('noteTitleInput').value = '';
+                document.getElementById('noteContentInput').value = '';
+            }
+
+            document.getElementById('noteModal').classList.add('active');
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.remove('active');
+        }
+
+        function saveNote() {
+            const title = document.getElementById('noteTitleInput').value;
+            const content = document.getElementById('noteContentInput').value;
+
+            if (!title || !content) {
+                alert('Per favore compila tutti i campi!');
+                return;
+            }
+
+            const note = {
+                title,
+                content,
+                date: new Date().toISOString()
+            };
+
+            if (editingNoteId !== null) {
+                notes[currentNoteType][editingNoteId] = note;
+            } else {
+                notes[currentNoteType].push(note);
+            }
+
+            saveToLocalStorage();
+            refreshNotesList(currentNoteType);
+            closeNoteModal();
+        }
+
+        function editNote(type, index) {
+            openNoteModal(type, index);
+        }
+
+        function deleteNote(type, index) {
+            if (confirm('Sei sicuro di voler eliminare questa nota?')) {
+                notes[type].splice(index, 1);
+                saveToLocalStorage();
+                refreshNotesList(type);
+            }
+        }
+    </script>
+</body>
+</html>
