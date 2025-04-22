@@ -6,8 +6,8 @@
     <title>Michi Note</title>
     <style>
         :root {
-            --primary: #081abf;
-            --secondary: #6366f1;
+            --primary:#4508bf;
+            --secondary: #7c5eb8;
             --accent: #818cf8;
             --background: #f8fafc;
             --text: #1e293b;
@@ -18,8 +18,8 @@
         }
 
         .dark-theme {
-            --primary: #3440a8;
-            --secondary: #818cf8;
+            --primary: #5141e0;
+            --secondary: #7c6fed;
             --accent: #a5b4fc;
             --background: #0f172a;
             --text: #f1f5f9;
@@ -70,7 +70,6 @@
 
         .logo-icon {
             font-size: 2rem;
-            animation: pulse 2s infinite ease-in-out;
         }
 
         .profile-container {
@@ -512,7 +511,7 @@
 
             <div class="notes-container" id="quickNotes">
                 <button class="back-btn" onclick="showHome()">
-                    <span>←</span> Indietro
+                    <span>🔙</span> Indietro
                 </button>
                 <h2 class="section-title">
                     <span>⚡</span> Note Veloci
@@ -530,7 +529,7 @@
 
             <div class="notes-container" id="importantNotes">
                 <button class="back-btn" onclick="showHome()">
-                    <span>←</span> Indietro
+                    <span>🔙</span> Indietro
                 </button>
                 <h2 class="section-title">
                     <span>⭐</span> Note Importanti
@@ -548,7 +547,7 @@
 
             <div class="notes-container" id="secureNotes">
                 <button class="back-btn" onclick="showHome()">
-                    <span>←</span> Indietro
+                    <span>🔙</span> Indietro
                 </button>
                 <h2 class="section-title">
                     <span>🔒</span> Note Sicure
@@ -601,7 +600,11 @@
                         <input type="checkbox" id="animationsToggle" checked>
                         <span class="slider"></span>
                     </label>
-                </div>
+				</div>
+				<div class="form-group" id="passwordSettingGroup">
+					<label class="form-label">Imposta Password per Note Sicure</label>
+					<input type="password" class="form-input" id="changePasswordInput" placeholder="Inserisci una nuova password">
+				</div>
                 <div class="form-group">
                 <button class="btn" onclick="saveSettings()">Salva Impostazioni</button>
             </div>
@@ -695,11 +698,26 @@
                 refreshNotesList('quick');
                 refreshNotesList('important');
                 refreshNotesList('secure');
+				securePassword = localStorage.getItem('securePassword') || '';
+    if (securePassword) {
+        const passwordGroup = document.getElementById('passwordSettingGroup');
+        if (passwordGroup) {
+            passwordGroup.innerHTML = '<div class="form-label">La password non potrà essere cambiata più.</div>';
+        }
+    }
             }
 
             // Carica password
             securePassword = localStorage.getItem('securePassword') || '';
 
+  // Verifica se la password è bloccata
+    const passwordLocked = localStorage.getItem('passwordLocked') === 'true';
+    if (passwordLocked) {
+        const passwordGroup = document.getElementById('passwordSettingGroup');
+        if (passwordGroup) {
+            passwordGroup.innerHTML = '<div class="form-label">La password non potrà essere cambiata più.</div>';
+        }
+    }
             // Carica nome utente
             const userName = localStorage.getItem('userName') || 'Utente';
             document.querySelector('.username').textContent = userName;
@@ -811,6 +829,8 @@
                 localStorage.setItem('securePassword', newPassword);
                 document.getElementById('changePasswordInput').value = '';
                 alert('Password aggiornata con successo!');
+				const passwordGroup = document.getElementById('passwordSettingGroup');
+				passwordGroup.innerHTML = '<div class="form-label">La password non potrà essere cambiata più.</div>';
             }
 
             alert('Impostazioni salvate!');
